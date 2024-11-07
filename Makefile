@@ -1,21 +1,24 @@
-SRCS = get_next_line.c get_next_line_utils.c
+SRCS = get_next_line.c get_next_line_utils.c main.c
 OBJS = $(SRCS:.c=.o)
 NAME = get_next_line
 CC = cc
-CFLAGS = -Wall -Wextra -Werror
+BUFFER =  -D BUFFER_SIZE=4
+CFLAGS = -Wall -Wextra -Werror $(BUFFER)
 RM = rm -f
 
+run: fclean all
+	./get_next_line
 
 $(NAME):$(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
+	$(CC) $(CFLAGS)  $(OBJS) -o $(NAME)
 
 all: $(NAME)
 
 clean:
-	$(RM) $(OBJS)
+	@$(RM) $(OBJS)
 
 fclean: clean
-	$(RM) $(NAME)
+	@$(RM) $(NAME)
 
 re: fclean all
 
