@@ -6,8 +6,7 @@ BUFFER =  -D BUFFER_SIZE=4
 CFLAGS = -Wall -Wextra -Werror $(BUFFER)
 RM = rm -f
 
-run: fclean all
-	./get_next_line
+
 
 $(NAME):$(OBJS)
 	$(CC) $(CFLAGS)  $(OBJS) -o $(NAME)
@@ -22,4 +21,6 @@ fclean: clean
 
 re: fclean all
 
+run: fclean all
+	./get_next_line
 .PHONY: all clean fclean re

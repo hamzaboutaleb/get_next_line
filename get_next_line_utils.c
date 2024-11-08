@@ -6,91 +6,113 @@
 /*   By: hboutale <hboutale@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/07 10:11:38 by hboutale          #+#    #+#             */
-/*   Updated: 2024/11/07 18:32:47 by hboutale         ###   ########.fr       */
+/*   Updated: 2024/11/08 12:29:25 by hboutale         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-static int	resize(t_array *arr, size_t new_size)
+t_string	*create_string(size_t cap)
 {
-	char	*data;
-	size_t	i;
+	t_string	*str;
 
-	if (!arr)
-		return (0);
-	data = (char *)malloc(sizeof(char) * new_size);
-	if (!data)
-		return (0);
-	i = 0;
-	while (i < arr->size)
+	str = (t_string *)malloc(sizeof(t_string));
+	if (!str)
+		return (NULL);
+	str->cap = 16;
+	if (cap > str->cap)
+		str->cap = cap;
+	str->len = 0;
+	str->data = (char *)malloc(sizeof(char) * str->cap);
+	if (!str->data)
 	{
-		data[i] = arr->data[i];
+		free(str);
+		return (NULL);
+	}
+	str->data[0] = '\0';
+	return (str);
+}
+
+static int	resize(t_string *str, size_t min_cap)
+{
+	size_t	new_cap;
+	size_t	i;
+	char	*new_data;
+
+	if (str->cap >= min_cap)
+		return (1);
+	i = 0;
+	new_cap = str->cap;
+	while (new_cap < min_cap)
+		new_cap *= 2;
+	new_data = (char *)malloc(sizeof(char) * new_cap);
+	if (!new_data)
+		return (0);
+	while (i < str->len + 1)
+	{
+		new_data[i] = str->data[i];
 		i++;
 	}
-	free(arr->data);
-	arr->data = data;
-	arr->cap = data;
+	free(str->data);
+	str->data = new_data;
 	return (1);
 }
 
-t_array	*create_array(t_array **array_ptr)
+int	append_str(t_string *str, char *s, size_t len)
 {
-	t_array	*array;
+	size_t	new_len;
+	size_t	i;
 
-	if (!array_ptr)
-		return (NULL);
-	if (*array_ptr)
-		free_array(array_ptr);
-	array = (t_array *)malloc(sizeof(t_array));
-	if (!array)
-		return (NULL);
-	else
-	{
-		array->cap = 32;
-		array->size = 0;
-		array->data = (char *)malloc(sizeof(char) * array->cap);
-	}
-	return (array);
-}
-
-char	*insert_str(t_array **array, char *s, size_t size)
-{
-	size_t	diff;
-	int		is_resized;
-	t_array	*arr;
-
-	if (!s || !array)
-		return (NULL);
-	arr = *array;
-	while (size--)
-	{
-		if (arr->size >= arr->cap && !resize(arr, arr->cap * 2))
-			return (free_array(array));
-	}
-	return (arr->data);
-}
-
-int	insert_char(t_array **array, char c)
-{
-	t_array	*arr;
-
-	if (!array || !*array)
+	new_len = str->len + len + 1;
+	if (!resize(str, new_len))
 		return (0);
-	arr = *array;
-	if (arr->size >= arr->cap && !resize(arr, arr->cap * 2))
+	i = 0;
+	while (i < len)
 	{
-		free_array(array);
-		return (0);
+		str->data[str->len++] = s[i];
+		i++;
 	}
-	arr->data[arr->size++] = c;
+	str->data[str->len] = '\0';
 	return (1);
 }
 
-void	*free_array(t_array **arr)
+char	*get_string(t_string *str)
 {
-	free((*arr)->data);
-	free(*arr);
-	*arr = NULL;
+	char	*s;
+
+	if (!str)
+		return (NULL);
+	s = str->data;
+	free(str);
+	return (s);
+}
+
+void	*free_str(t_string *s)
+{
+	if (!s)
+		return (NULL);
+	free(s->data);
+	free(s);
 	return (NULL);
+}
+
+size_t	ft_strlen(char *s)
+{
+	size_t	count;
+
+	count = 0;
+	while (s[count])
+		count++;
+	return (count);
+}
+
+char	*build_string(char *s)
+{
+	t_string	*str;
+	size_t		s_len;
+
+	s_len = ft_strlen(s);
+	str = create_string(s_len);
+	append_str(str, s, s_len);
+	return (get_string(&str));
 }
