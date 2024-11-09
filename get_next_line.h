@@ -6,7 +6,7 @@
 /*   By: hboutale <hboutale@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/07 10:11:35 by hboutale          #+#    #+#             */
-/*   Updated: 2024/11/09 14:56:25 by hboutale         ###   ########.fr       */
+/*   Updated: 2024/11/09 18:54:58 by hboutale         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,8 @@
 # include <fcntl.h>
 # include <stdio.h>
 # include <stdlib.h>
+# include <string.h>
 # include <unistd.h>
-
 # define true 1
 # define false 0
 # define NEW_LINE_FOUND 0
