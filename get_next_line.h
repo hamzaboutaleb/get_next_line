@@ -6,7 +6,7 @@
 /*   By: hboutale <hboutale@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/07 10:11:35 by hboutale          #+#    #+#             */
-/*   Updated: 2024/11/08 12:29:35 by hboutale         ###   ########.fr       */
+/*   Updated: 2024/11/09 14:56:25 by hboutale         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,14 @@
 # include <stdlib.h>
 # include <unistd.h>
 
+# define true 1
+# define false 0
+# define NEW_LINE_FOUND 0
+# define NEW_LINE_NOT_FOUND 1
+# define ERROR 2
+typedef int	t_bool;
 # ifndef BUFFER_SIZE
-#  define BUFFER_SIZE 500
+#  define BUFFER_SIZE 1
 # endif
 
 typedef struct s_string
@@ -29,11 +35,7 @@ typedef struct s_string
 	size_t	cap;
 }			t_string;
 
-t_string	*create_string(size_t cap);
 char		*get_next_line(int fd);
-int			append_str(t_string *str, char *s, size_t len);
-char		*get_string(t_string *str);
-void		*free_str(t_string *s);
-char		*build_string(char *s);
-size_t		ft_strlen(char *s);
+t_string	*create_string(void);
+t_bool		add(t_string *s, char *str, size_t len);
 #endif

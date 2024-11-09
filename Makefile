@@ -2,14 +2,14 @@ SRCS = get_next_line.c get_next_line_utils.c main.c
 OBJS = $(SRCS:.c=.o)
 NAME = get_next_line
 CC = cc
-BUFFER =  -D BUFFER_SIZE=4
+BUFFER = 
 CFLAGS = -Wall -Wextra -Werror $(BUFFER)
 RM = rm -f
 
 
 
 $(NAME):$(OBJS)
-	$(CC) $(CFLAGS)  $(OBJS) -o $(NAME)
+	@$(CC) $(CFLAGS)  $(OBJS) -o $(NAME)
 
 all: $(NAME)
 

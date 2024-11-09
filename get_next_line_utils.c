@@ -5,114 +5,62 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: hboutale <hboutale@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/07 10:11:38 by hboutale          #+#    #+#             */
-/*   Updated: 2024/11/08 12:29:25 by hboutale         ###   ########.fr       */
+/*   Created: 2024/11/09 13:31:46 by hboutale          #+#    #+#             */
+/*   Updated: 2024/11/09 15:21:03 by hboutale         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-t_string	*create_string(size_t cap)
+t_string	*create_string(void)
 {
-	t_string	*str;
+	t_string	*s;
 
-	str = (t_string *)malloc(sizeof(t_string));
-	if (!str)
+	s = (t_string *)malloc(sizeof(t_string));
+	if (!s)
 		return (NULL);
-	str->cap = 16;
-	if (cap > str->cap)
-		str->cap = cap;
-	str->len = 0;
-	str->data = (char *)malloc(sizeof(char) * str->cap);
-	if (!str->data)
+	s->cap = 1;
+	s->len = 0;
+	s->data = (char *)malloc(sizeof(char) * s->cap);
+	if (!s->data)
 	{
-		free(str);
+		free(s);
 		return (NULL);
 	}
-	str->data[0] = '\0';
-	return (str);
-}
-
-static int	resize(t_string *str, size_t min_cap)
-{
-	size_t	new_cap;
-	size_t	i;
-	char	*new_data;
-
-	if (str->cap >= min_cap)
-		return (1);
-	i = 0;
-	new_cap = str->cap;
-	while (new_cap < min_cap)
-		new_cap *= 2;
-	new_data = (char *)malloc(sizeof(char) * new_cap);
-	if (!new_data)
-		return (0);
-	while (i < str->len + 1)
-	{
-		new_data[i] = str->data[i];
-		i++;
-	}
-	free(str->data);
-	str->data = new_data;
-	return (1);
-}
-
-int	append_str(t_string *str, char *s, size_t len)
-{
-	size_t	new_len;
-	size_t	i;
-
-	new_len = str->len + len + 1;
-	if (!resize(str, new_len))
-		return (0);
-	i = 0;
-	while (i < len)
-	{
-		str->data[str->len++] = s[i];
-		i++;
-	}
-	str->data[str->len] = '\0';
-	return (1);
-}
-
-char	*get_string(t_string *str)
-{
-	char	*s;
-
-	if (!str)
-		return (NULL);
-	s = str->data;
-	free(str);
+	s->data[0] = '\0';
 	return (s);
 }
 
-void	*free_str(t_string *s)
+static t_bool	resize(t_string *s, size_t new_cap)
 {
-	if (!s)
-		return (NULL);
+	char	*new_str;
+	size_t	i;
+
+	new_str = (char *)malloc(sizeof(char) * new_cap);
+	if (!new_str)
+		return (false);
+	i = 0;
+	while (i <= s->len)
+	{
+		new_str[i] = s->data[i];
+		i++;
+	}
 	free(s->data);
-	free(s);
-	return (NULL);
+	s->data = new_str;
+	s->cap = new_cap;
+	return (true);
 }
 
-size_t	ft_strlen(char *s)
+t_bool	add(t_string *s, char *str, size_t len)
 {
-	size_t	count;
+	size_t	i;
 
-	count = 0;
-	while (s[count])
-		count++;
-	return (count);
+	if (!resize(s, s->cap + len))
+		return (false);
+	i = 0;
+	while (str[i] && i < len)
+		s->data[s->len++] = str[i++];
+	s->data[s->len] = '\0';
+	return (true);
 }
 
-char	*build_string(char *s)
-{
-	t_string	*str;
-	size_t		s_len;
-
-	s_len = ft_strlen(s);
-	str = create_string(s_len);
-	append_str(str, s, s_len);
-	return (get_string(&str));
-}
