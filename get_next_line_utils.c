@@ -6,7 +6,7 @@
 /*   By: hboutale <hboutale@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/09 13:31:46 by hboutale          #+#    #+#             */
-/*   Updated: 2024/11/09 19:00:51 by hboutale         ###   ########.fr       */
+/*   Updated: 2024/11/09 21:43:32 by hboutale         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,10 +37,10 @@ static t_bool	resize(t_string *s, size_t new_cap)
 	size_t	i;
 
 	if (new_cap == 0)
-		return (false);
+		return (FALSE);
 	new_str = (char *)malloc(sizeof(char) * new_cap);
 	if (new_str == NULL)
-		return (false);
+		return (FALSE);
 	i = 0;
 	while (i <= s->len && i < new_cap)
 	{
@@ -50,7 +50,7 @@ static t_bool	resize(t_string *s, size_t new_cap)
 	free(s->data);
 	s->data = new_str;
 	s->cap = new_cap;
-	return (true);
+	return (TRUE);
 }
 
 t_bool	add(t_string *s, char *str, size_t len)
@@ -63,12 +63,47 @@ t_bool	add(t_string *s, char *str, size_t len)
 		while (str[len])
 			len++;
 	}
-	// printf("\nnew malloc size: %zd\n", s->cap );
 	if (!resize(s, s->cap + len))
-		return (false);
+		return (FALSE);
 	i = 0;
 	while (str[i] && i < len)
 		s->data[s->len++] = str[i++];
 	s->data[s->len] = '\0';
-	return (true);
+	return (TRUE);
+}
+
+char	*ft_strdup(char *src, size_t len)
+{
+	char	*res;
+	size_t	i;
+
+	if (len == (size_t)-1)
+	{
+		len = 0;
+		while (src[len])
+			len++;
+	}
+	i = 0;
+	res = (char *)malloc(len + 1);
+	if (res == NULL)
+		return (NULL);
+	while (i < len && src[i])
+	{
+		res[i] = src[i];
+		i++;
+	}
+	res[i] = '\0';
+	return (res);
+}
+
+ssize_t	find(char *haystack, char needle)
+{
+	ssize_t	i;
+
+	i = 0;
+	while (haystack[i] && haystack[i] != needle)
+		i++;
+	if (!haystack[i])
+		return (-1);
+	return (i);
 }
