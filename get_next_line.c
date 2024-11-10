@@ -6,147 +6,95 @@
 /*   By: hboutale <hboutale@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/09 13:31:49 by hboutale          #+#    #+#             */
-/*   Updated: 2024/11/09 21:40:21 by hboutale         ###   ########.fr       */
+/*   Updated: 2024/11/10 20:56:40 by hboutale         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-static void	*clean(char **buffer, t_string **s, char **rest)
+size_t	find(char *buffer, char c)
 {
-	if (rest && *rest)
-	{
-		free(*rest);
-		*rest = NULL;
-	}
-	if (buffer && *buffer)
-	{
-		free(*buffer);
-		*buffer = NULL;
-	}
-	if (s && *s)
-	{
-		free((*s)->data);
-		free(*s);
-		*s = NULL;
-	}
-	return (NULL);
+	ssize_t	i;
+
+	i = 0;
+	while (buffer[i] && buffer[i] != c)
+		i++;
+	if (buffer[i] == c)
+		return (i);
+	return (-1);
 }
 
-static char	*get_string_free(t_string *s, char *buffer)
+t_list	*read_file(int fd, t_list *list)
 {
-	char	*temp;
-
-	temp = s->data;
-	if (buffer)
-		free(buffer);
-	if (s->len == 0)
-	{
-		free(temp);
-		free(s);
+	if (list == NULL)
+		list = create_list();
+	if (!list)
 		return (NULL);
+	while (1)
+	{
+		if (!push_back(list))
+			return (NULL);
+		list->tail->len = read(fd, list->tail->buffer, BUFFER_SIZE);
+		if (list->tail->len == -1)
+			return (list_free(list));
+		list->tail->buffer[list->tail->len] = '\0';
+		if (list->tail->len == 0)
+		{
+			list->reach_end = TRUE;
+			return (list);
+		}
+		list->tail->nl_pos = find(list->tail->buffer, '\n');
+		if (list->tail->nl_pos != (size_t)-1)
+		{
+			list->line_length += list->tail->nl_pos + 1;
+			return (list);
+		}
+		list->line_length += list->tail->len;
 	}
-	free(s);
-	return (temp);
 }
 
-static t_bool	init(int fd, char **buffer, t_string **s)
+char	*ft_line(t_list **list)
 {
-	*buffer = NULL;
-	*s = NULL;
-	if (fd < 0 || BUFFER_SIZE <= 0)
-		return (FALSE);
-	*buffer = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
-	if (!*buffer)
-		return (FALSE);
-	*s = create_string();
-	if (!*s)
-	{
-		free(*buffer);
-		*buffer = NULL;
-		return (FALSE);
-	}
-	return (TRUE);
-}
+	char		*line;
+	t_buffer	*cur;
+	size_t		i;
 
-static int	process_line(char *buffer, ssize_t len, t_string *s, char **rest)
-{
-	ssize_t	nl_idx;
-	char	*new_rest;
-
-	if (len == 0)
-		return (NEW_LINE_FOUND);
-	nl_idx = find(buffer, '\n');
-	if (nl_idx == -1)
+	i = 0;
+	if ((*list)->line_length == 0)
+		return (list_free(*list));
+	cur = (*list)->head;
+	line = (char *)malloc(sizeof(char) * ((*list)->line_length + 1));
+	if (!line)
+		return (list_free(*list));
+	while (cur && i < (*list)->line_length)
 	{
-		if (!add(s, buffer, len))
-			return (ERROR);
-		return (NEW_LINE_NOT_FOUND);
+		cur = (*list)->head;
+		// printf("size %zd -- %zd -- %s\n", (*list)->size,
+		//(*list)->line_length,
+		// 	cur->buffer);
+		while (i < (*list)->line_length && cur->cursor < (size_t)cur->len)
+		{
+			line[i++] = cur->buffer[cur->cursor++];
+			//printf("current len: %zd / %zd\n", i, (*list)->line_length);
+		}
+		if ((size_t)cur->len == cur->cursor && cur->len > 0)
+			delete_first(*list);
 	}
-	if (!add(s, buffer, nl_idx + 1))
-		return (ERROR);
-	new_rest = ft_strdup(buffer + nl_idx + 1, -1);
-	if (!new_rest)
-		return (ERROR);
-	if (*rest)
-	{
-		free(*rest);
-		*rest = NULL;
-	}
-	*rest = new_rest;
-	return (NEW_LINE_FOUND);
-}
-
-static void	*process_rest(char **rest, t_string **s, char **buffer)
-{
-	ssize_t	nl_idx;
-	char	*new_rest;
-
-	if (!rest || !*rest)
-		return (NULL);
-	if (strlen(*rest) == 0)
-		return (clean(NULL, NULL, rest));
-	nl_idx = find(*rest, '\n');
-	if (nl_idx == -1)
-	{
-		if (!add(*s, *rest, -1))
-			return (clean(buffer, s, rest));
-		free(*rest);
-		return (*rest = NULL);
-	}
-	if (!add(*s, *rest, nl_idx + 1))
-		return (clean(buffer, s, rest));
-	new_rest = ft_strdup(*rest + nl_idx + 1, -1);
-	if (!new_rest)
-		return (clean(buffer, s, rest));
-	free(*rest);
-	*rest = new_rest;
-	return (*rest);
+	line[i] = '\0';
+	(*list)->line_length = 0;
+	return (line);
 }
 
 char	*get_next_line(int fd)
 {
-	static char	*rest = NULL;
-	ssize_t		bytes;
-	char		*buffer;
-	t_string	*s;
-	int			status;
+	static t_list	*list = NULL;
+	char			*line;
 
-	if (!init(fd, &buffer, &s))
-		return (clean(&buffer, &s, &rest));
-	if (process_rest(&rest, &s, &buffer))
-		return (get_string_free(s, buffer));
-	while (1)
-	{
-		bytes = read(fd, buffer, BUFFER_SIZE);
-		if (bytes < 0)
-			return (clean(&buffer, &s, &rest));
-		buffer[bytes] = '\0';
-		status = process_line(buffer, bytes, s, &rest);
-		if (status == ERROR)
-			return (clean(&buffer, &s, &rest));
-		if (status == NEW_LINE_FOUND || bytes == 0)
-			return (get_string_free(s, buffer));
-	}
-	return (NULL);
+	if (fd < 0 || BUFFER_SIZE <= 0)
+		return (NULL);
+	list = read_file(fd, list);
+	if (!list)
+		return (NULL);
+	line = ft_line(&list);
+	return (line);
 }

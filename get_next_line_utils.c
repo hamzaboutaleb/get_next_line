@@ -6,104 +6,108 @@
 /*   By: hboutale <hboutale@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/09 13:31:46 by hboutale          #+#    #+#             */
-/*   Updated: 2024/11/09 21:43:32 by hboutale         ###   ########.fr       */
+/*   Updated: 2024/11/10 20:36:59 by hboutale         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-t_string	*create_string(void)
+void	free_buffer(t_buffer *buffer)
 {
-	t_string	*s;
-
-	s = (t_string *)malloc(sizeof(t_string));
-	if (!s)
-		return (NULL);
-	s->cap = 1;
-	s->len = 0;
-	s->data = (char *)malloc(sizeof(char) * s->cap);
-	if (!s->data)
-	{
-		free(s);
-		return (NULL);
-	}
-	s->data[0] = '\0';
-	return (s);
+	if (!buffer)
+		return ;
+	if (buffer->buffer)
+		free(buffer->buffer);
+	free(buffer);
 }
 
-static t_bool	resize(t_string *s, size_t new_cap)
+t_list	*create_list(void)
 {
-	char	*new_str;
-	size_t	i;
+	t_list	*list;
 
-	if (new_cap == 0)
+	list = (t_list *)malloc(sizeof(t_list));
+	if (!list)
+		return (NULL);
+	list->head = NULL;
+	list->tail = NULL;
+	list->reach_end = FALSE;
+	list->line_length = 0;
+	list->size = 0;
+	return (list);
+}
+
+t_bool	push_back(t_list *list)
+{
+	t_buffer	*buffer;
+
+	if (!list)
 		return (FALSE);
-	new_str = (char *)malloc(sizeof(char) * new_cap);
-	if (new_str == NULL)
-		return (FALSE);
-	i = 0;
-	while (i <= s->len && i < new_cap)
+	buffer = create_buffer();
+	if (!buffer)
+		return (list_free(list) && FALSE);
+	list->size++;
+	if (list->head == NULL)
 	{
-		new_str[i] = s->data[i];
-		i++;
+		list->head = buffer;
+		list->tail = buffer;
+		return (TRUE);
 	}
-	free(s->data);
-	s->data = new_str;
-	s->cap = new_cap;
+	list->tail->next = buffer;
+	list->tail = buffer;
 	return (TRUE);
 }
 
-t_bool	add(t_string *s, char *str, size_t len)
+void	*list_free(t_list *list)
 {
-	size_t	i;
+	t_buffer	*curr;
+	t_buffer	*next;
 
-	if (len == (size_t)-1)
-	{
-		len = 0;
-		while (str[len])
-			len++;
-	}
-	if (!resize(s, s->cap + len))
-		return (FALSE);
-	i = 0;
-	while (str[i] && i < len)
-		s->data[s->len++] = str[i++];
-	s->data[s->len] = '\0';
-	return (TRUE);
-}
-
-char	*ft_strdup(char *src, size_t len)
-{
-	char	*res;
-	size_t	i;
-
-	if (len == (size_t)-1)
-	{
-		len = 0;
-		while (src[len])
-			len++;
-	}
-	i = 0;
-	res = (char *)malloc(len + 1);
-	if (res == NULL)
+	if (!list || !list->head)
 		return (NULL);
-	while (i < len && src[i])
+	curr = list->head;
+	while (curr)
 	{
-		res[i] = src[i];
-		i++;
+		next = curr->next;
+		free_buffer(curr);
+		curr = next;
 	}
-	res[i] = '\0';
-	return (res);
+	free(list);
+	return (NULL);
 }
 
-ssize_t	find(char *haystack, char needle)
+void	delete_first(t_list *list)
 {
-	ssize_t	i;
+	t_buffer	*deleted;
 
-	i = 0;
-	while (haystack[i] && haystack[i] != needle)
-		i++;
-	if (!haystack[i])
-		return (-1);
-	return (i);
+	if (!list || !list->head)
+		return ;
+	deleted = list->head;
+	list->head = list->head->next;
+	free_buffer(deleted);
+	list->size--;
+	if (list->size == 0)
+	{
+		list->head = NULL;
+		list->tail = NULL;
+	}
+}
+
+t_buffer	*create_buffer(void)
+{
+	t_buffer	*buffer;
+
+	buffer = (t_buffer *)malloc(sizeof(t_buffer));
+	if (!buffer)
+		return (NULL);
+	buffer->buffer = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
+	if (!buffer->buffer)
+	{
+		free(buffer);
+		return (NULL);
+	}
+	buffer->len = 0;
+	buffer->next = NULL;
+	buffer->nl_pos = -1;
+	buffer->cursor = 0;
+	return (buffer);
 }

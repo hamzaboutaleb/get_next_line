@@ -3,7 +3,7 @@ OBJS = $(SRCS:.c=.o)
 NAME = get_next_line
 CC = cc
 BUFFER = 
-CFLAGS = -Wall -Wextra -Werror $(BUFFER)
+CFLAGS = -Wall -Wextra -Werror -fsanitize=address -g
 RM = rm -f
 
 
