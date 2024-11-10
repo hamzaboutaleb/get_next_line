@@ -6,7 +6,7 @@
 /*   By: hboutale <hboutale@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/07 10:11:35 by hboutale          #+#    #+#             */
-/*   Updated: 2024/11/10 20:45:22 by hboutale         ###   ########.fr       */
+/*   Updated: 2024/11/10 22:24:09 by hboutale         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@
 typedef int			t_bool;
 
 # ifndef BUFFER_SIZE
-#  define BUFFER_SIZE 1
+#  define BUFFER_SIZE 9
 # endif
 
 typedef struct s_buffer
@@ -50,8 +50,8 @@ typedef struct s_list
 
 char				*get_next_line(int fd);
 t_buffer			*create_buffer(void);
-t_bool				push_back(t_list *list);
-void				*list_free(t_list *list);
+t_bool				push_back(t_list **list);
+void				*list_free(t_list **list);
 void				delete_first(t_list *list);
 t_list				*create_list(void);
 #endif

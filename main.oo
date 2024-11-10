@@ -6,7 +6,7 @@
 /*   By: hboutale <hboutale@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/09 14:10:55 by hboutale          #+#    #+#             */
-/*   Updated: 2024/11/10 13:33:27 by hboutale         ###   ########.fr       */
+/*   Updated: 2024/11/10 22:48:01 by hboutale         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,14 +14,13 @@
 
 int	main(void)
 {
-	int fd;
-	char *line;
+	int		fd;
+	char	*line;
 
-	fd = open("hello.txt", O_RDONLY);
-
+	fd = open("giant_line.txt", O_RDONLY);
 	do
 	{
-		line = get_next_line(fd);
-		printf("%s", line);
+	line = get_next_line(fd);
+	printf("line-->\n%s", line);
 	} while (line);
 }

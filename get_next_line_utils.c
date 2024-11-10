@@ -6,20 +6,11 @@
 /*   By: hboutale <hboutale@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/09 13:31:46 by hboutale          #+#    #+#             */
-/*   Updated: 2024/11/10 20:36:59 by hboutale         ###   ########.fr       */
+/*   Updated: 2024/11/10 22:50:49 by hboutale         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-
-void	free_buffer(t_buffer *buffer)
-{
-	if (!buffer)
-		return ;
-	if (buffer->buffer)
-		free(buffer->buffer);
-	free(buffer);
-}
 
 t_list	*create_list(void)
 {
@@ -36,42 +27,47 @@ t_list	*create_list(void)
 	return (list);
 }
 
-t_bool	push_back(t_list *list)
+t_bool	push_back(t_list **list)
 {
 	t_buffer	*buffer;
 
-	if (!list)
+	if (!list || !*list)
 		return (FALSE);
 	buffer = create_buffer();
 	if (!buffer)
 		return (list_free(list) && FALSE);
-	list->size++;
-	if (list->head == NULL)
+	(*list)->size++;
+	if ((*list)->head == NULL)
 	{
-		list->head = buffer;
-		list->tail = buffer;
+		(*list)->head = buffer;
+		(*list)->tail = buffer;
 		return (TRUE);
 	}
-	list->tail->next = buffer;
-	list->tail = buffer;
+	(*list)->tail->next = buffer;
+	(*list)->tail = buffer;
 	return (TRUE);
 }
 
-void	*list_free(t_list *list)
+void	*list_free(t_list **list)
 {
 	t_buffer	*curr;
 	t_buffer	*next;
 
-	if (!list || !list->head)
+	if (!list || !*list)
 		return (NULL);
-	curr = list->head;
+	if (!list || !(*list)->head)
+		return (NULL);
+	curr = (*list)->head;
 	while (curr)
 	{
 		next = curr->next;
-		free_buffer(curr);
+		if (curr->buffer)
+			free(curr->buffer);
+		free(curr);
 		curr = next;
 	}
-	free(list);
+	free(*list);
+	*list = NULL;
 	return (NULL);
 }
 
@@ -83,7 +79,9 @@ void	delete_first(t_list *list)
 		return ;
 	deleted = list->head;
 	list->head = list->head->next;
-	free_buffer(deleted);
+	if (deleted->buffer)
+		free(deleted->buffer);
+	free(deleted);
 	list->size--;
 	if (list->size == 0)
 	{
